@@ -29,4 +29,10 @@ public class Image {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
+
+    // After persist(added), auto trigger
+    @PostPersist
+    public void buildDownloadUrl() {
+        this.downloadUrl = "/api/v1/images/image/download/" + this.id;
+    }
 }
