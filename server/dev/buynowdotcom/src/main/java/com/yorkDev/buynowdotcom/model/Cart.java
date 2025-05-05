@@ -26,5 +26,18 @@ public class Cart {
     private User user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<CartItem> items = new HashSet<>();
+    private Set<CartItem> cartItems = new HashSet<>();
+
+    // Remove cartItem from cart method
+    public void removeItem(CartItem cartItem) {
+        // remove the item, break cart to item relationship
+        this.cartItems.remove(cartItem);
+        // break the relationship of item to cart
+        cartItem.setCart(null);
+        updateTotalAmount();
+    }
+
+    private void updateTotalAmount() {
+
+    }
 }
