@@ -6,15 +6,12 @@ import com.yorkDev.buynowdotcom.request.AddProductRequest;
 import com.yorkDev.buynowdotcom.request.ProductUpdateRequest;
 import com.yorkDev.buynowdotcom.response.ApiResponse;
 import com.yorkDev.buynowdotcom.service.product.IProductService;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,42 +28,18 @@ public class ProductController {
 
     @GetMapping("/product/{productId}/product")
     public ResponseEntity<ApiResponse> getProductById(@PathVariable Long productId) {
-        try {
-            Product product = productService.getProductById(productId);
-            ProductDto productDto = productService.convertToDto(product);
-            return ResponseEntity.ok().body(new ApiResponse("Found", productDto));
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(NOT_FOUND).body(new ApiResponse("Oops! ", e.getMessage()));
-        }
+        Product product = productService.getProductById(productId);
+        ProductDto productDto = productService.convertToDto(product);
+        return ResponseEntity.ok().body(new ApiResponse("Found", productDto));
     }
-
-
-    // Assignment 3
-    /*
-     *   Your assignment is to complete the product controller implementation;
-     * //1. Note: Remember to check the ones that are returning list and single product
-     *  in order to use the appropriate dto converter.
-     *
-     * // 2. Remember to use the
-     *  @RequestBody,
-     *  @PathVariable,
-     *  @RequestParam,
-     *  in their different area where is needed.
-     *  (e.g addProduct and updateProduct need the @RequestBody and maybe together with the @PathVariable)
-     *
-     *
-     * */
 
 
     @PostMapping("/add")
     public ResponseEntity<ApiResponse> addProduct(@RequestBody AddProductRequest product) {
-        try {
-            Product theProduct = productService.addProduct(product);
-            ProductDto productDto = productService.convertToDto(theProduct);
-            return ResponseEntity.ok(new ApiResponse("Add product success!", productDto));
-        } catch (EntityExistsException e) {
-            return ResponseEntity.status(CONFLICT).body(new ApiResponse("Error: ", e.getMessage()));
-        }
+        Product theProduct = productService.addProduct(product);
+        ProductDto productDto = productService.convertToDto(theProduct);
+        return ResponseEntity.ok(new ApiResponse("Add product success!", productDto));
+
     }
 
     @PutMapping("/product/{productId}/update")
