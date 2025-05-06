@@ -1,5 +1,6 @@
 package com.yorkDev.buynowdotcom.service.product;
 
+import com.yorkDev.buynowdotcom.dtos.ProductDto;
 import com.yorkDev.buynowdotcom.model.Product;
 import com.yorkDev.buynowdotcom.request.AddProductRequest;
 import com.yorkDev.buynowdotcom.request.ProductUpdateRequest;
@@ -18,4 +19,8 @@ public interface IProductService {
     List<Product> getProductsByCategory(String category);
     List<Product> getProductsByBrand(String brand);
     List<Product> getProductsByName(String name);
+
+    List<ProductDto> getConvertedProducts(List<Product> products);
+
+    ProductDto convertToDto(Product product);
 }
