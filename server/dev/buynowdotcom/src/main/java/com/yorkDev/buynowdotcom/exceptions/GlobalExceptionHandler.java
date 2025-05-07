@@ -25,6 +25,13 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse("Not Found: ", e.getMessage()));
     }
 
+    @ExceptionHandler(InsufficientInventoryException.class)
+    public ResponseEntity<ApiResponse> handleInventoryException(InsufficientInventoryException e) {
+        return ResponseEntity
+                .status(BAD_REQUEST)
+                .body(new ApiResponse("Insufficient Inventory", e.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse> handleGeneralExceptions(Exception e) {
         return ResponseEntity

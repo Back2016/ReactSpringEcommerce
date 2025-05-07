@@ -1,5 +1,7 @@
 package com.yorkDev.buynowdotcom.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,11 +23,12 @@ public class CartItem {
     private BigDecimal unitPrice;
     private BigDecimal totalPrice;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @JsonBackReference
+    @ManyToOne
     @JoinColumn(name = "cart_id")
     private Cart cart;
 
