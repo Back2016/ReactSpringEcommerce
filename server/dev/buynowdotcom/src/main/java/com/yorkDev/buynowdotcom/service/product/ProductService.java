@@ -2,6 +2,7 @@ package com.yorkDev.buynowdotcom.service.product;
 
 import com.yorkDev.buynowdotcom.dtos.ImageDto;
 import com.yorkDev.buynowdotcom.dtos.ProductDto;
+import com.yorkDev.buynowdotcom.dtos.ProductSpecDto;
 import com.yorkDev.buynowdotcom.model.*;
 import com.yorkDev.buynowdotcom.repository.*;
 import com.yorkDev.buynowdotcom.request.AddProductRequest;
@@ -24,6 +25,7 @@ public class ProductService implements IProductService {
     private final CartItemRepository cartItemRepository;
     private final OrderItemRepository orderItemRepository;
     private final ImageRepository imageRepository;
+    private final ProductSpecRepository productSpecRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -53,6 +55,7 @@ public class ProductService implements IProductService {
                 request.getPrice(),
                 request.getInventory(),
                 request.getDescription(),
+                request.getLongDescription(),
                 category
         );
     }
@@ -74,6 +77,7 @@ public class ProductService implements IProductService {
         existingProduct.setPrice(request.getPrice());
         existingProduct.setInventory(request.getInventory());
         existingProduct.setDescription(request.getDescription());
+        existingProduct.setLongDescription(request.getLongDescription());
         Category category = categoryRepository.findByName(request.getCategory().getName());
         existingProduct.setCategory(category);
         return existingProduct;
@@ -168,9 +172,15 @@ public class ProductService implements IProductService {
     @Override
     public ProductDto convertToDto(Product product) {
         ProductDto productDto = modelMapper.map(product, ProductDto.class);
-        List<Image> images =  imageRepository.findByProductId(product.getId());
+        Long productId = product.getId();
+        // Set images to productDto
+        List<Image> images =  imageRepository.findByProductId(productId);
         List<ImageDto> imageDtos = images.stream().map(image -> modelMapper.map(image, ImageDto.class)).toList();
         productDto.setImages(imageDtos);
+        // Set Specs to productDto
+        List<ProductSpec> specs = productSpecRepository.findByProductId(productId);
+        List<ProductSpecDto> specDtos = specs.stream().map(spec -> modelMapper.map(spec, ProductSpecDto.class)).toList();
+        productDto.setProductSpecs(specDtos);
         return productDto;
     }
 }

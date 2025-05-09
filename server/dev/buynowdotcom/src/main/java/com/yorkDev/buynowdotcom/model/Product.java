@@ -1,7 +1,6 @@
 package com.yorkDev.buynowdotcom.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,6 +21,8 @@ public class Product {
     private BigDecimal price;
     private int inventory;
     private String description;
+    @Lob
+    private String longDescription;
 
     //@ManyToOne(fetch = FetchType.LAZY)
     //@JoinColumn(name = "category_id", nullable = false)
@@ -32,12 +33,16 @@ public class Product {
     @OneToMany(mappedBy ="product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images;
 
-    public Product(String name, String brand, BigDecimal price, int inventory, String description, Category category) {
+    @OneToMany(mappedBy ="product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductSpec> productSpecs;
+
+    public Product(String name, String brand, BigDecimal price, int inventory, String description, String longDescription , Category category) {
         this.name = name;
         this.brand = brand;
         this.price = price;
         this.inventory = inventory;
         this.description = description;
+        this.longDescription = longDescription;
         this.category = category;
     }
 }
