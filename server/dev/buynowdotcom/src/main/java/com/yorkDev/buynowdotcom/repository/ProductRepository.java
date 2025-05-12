@@ -1,6 +1,8 @@
 package com.yorkDev.buynowdotcom.repository;
 
 import com.yorkDev.buynowdotcom.model.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -10,6 +12,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategoryNameAndBrand(String category, String brand);
 
     List<Product> findByCategoryName(String category);
+
+    Page<Product> findByCategoryName(String categoryName, Pageable pageable);
 
     List<Product> findByNameAndBrand(String name, String brand);
 

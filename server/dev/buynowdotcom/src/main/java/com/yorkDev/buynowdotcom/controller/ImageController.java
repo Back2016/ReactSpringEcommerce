@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.sql.SQLException;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${api.prefix}/images")
@@ -30,6 +31,7 @@ public class ImageController {
         return ResponseEntity.ok(new ApiResponse("Images uploaded successfully!", imageDtos));
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/image/download/{imageId}")
     public ResponseEntity<Resource> downloadImage(@PathVariable Long imageId) throws SQLException {
         Image image = imageService.getImageById(imageId);

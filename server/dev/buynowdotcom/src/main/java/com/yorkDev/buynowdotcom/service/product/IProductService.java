@@ -4,6 +4,7 @@ import com.yorkDev.buynowdotcom.dtos.ProductDto;
 import com.yorkDev.buynowdotcom.model.Product;
 import com.yorkDev.buynowdotcom.request.AddProductRequest;
 import com.yorkDev.buynowdotcom.request.ProductUpdateRequest;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -17,6 +18,8 @@ public interface IProductService {
     List<Product> getProductsByCategoryAndBrand(String category, String brand);
     List<Product> getProductsByBrandAndName(String brand, String name);
     List<Product> getProductsByCategory(String category);
+    Page<Product> getProductsByCategoryPaginated(String category, int page, int limit);
+
     List<Product> getProductsByBrand(String brand);
     List<Product> getProductsByName(String name);
 

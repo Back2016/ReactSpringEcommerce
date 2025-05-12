@@ -5,13 +5,16 @@ import com.yorkDev.buynowdotcom.model.Product;
 import com.yorkDev.buynowdotcom.request.AddProductRequest;
 import com.yorkDev.buynowdotcom.request.ProductUpdateRequest;
 import com.yorkDev.buynowdotcom.response.ApiResponse;
+import com.yorkDev.buynowdotcom.response.PaginatedResponse;
 import com.yorkDev.buynowdotcom.service.product.IProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -91,4 +94,24 @@ public class ProductController {
         List<ProductDto> convertedProducts = productService.getConvertedProducts(products);
         return ResponseEntity.ok(new ApiResponse("success", convertedProducts));
     }
+
+    @GetMapping("/{category}")
+    public ResponseEntity<ApiResponse> getProductsByCategoryPaginated(
+            @PathVariable String category,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int limit
+    ) {
+        Page<Product> pagedProducts = productService.getProductsByCategoryPaginated(category, page - 1, limit);
+        List<ProductDto> productDtos = productService.getConvertedProducts(pagedProducts.getContent());
+
+        PaginatedResponse<ProductDto> responseBody = new PaginatedResponse<>(
+                productDtos,
+                pagedProducts.getNumber() + 1,
+                pagedProducts.getTotalPages(),
+                pagedProducts.getTotalElements()
+        );
+
+        return ResponseEntity.ok(new ApiResponse("success", responseBody));
+    }
+
 }

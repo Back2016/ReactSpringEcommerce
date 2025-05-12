@@ -11,6 +11,9 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -152,6 +155,12 @@ public class ProductService implements IProductService {
     @Override
     public List<Product> getProductsByCategory(String category) {
         return productRepository.findByCategoryName(category);
+    }
+
+    @Override
+    public Page<Product> getProductsByCategoryPaginated(String category, int page, int limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        return productRepository.findByCategoryName(category, pageable);
     }
 
     @Override
