@@ -2,3 +2,5 @@
 *.docx
 testingImages/
 *.properties
+client/
+db/

@@ -27,18 +27,22 @@ public class CartItemController {
         return ResponseEntity.ok(new ApiResponse("Item added successfully!", null));
     }
 
-    @DeleteMapping("/cart/{cartId}/delete/item/{productId}")
-    public ResponseEntity<ApiResponse> removeItemFromCart(@PathVariable Long cartId,
+    @DeleteMapping("/cart/delete/item/{productId}")
+    public ResponseEntity<ApiResponse> removeItemFromCart(
                                                           @PathVariable Long productId) {
-        cartItemService.removeItemFromCart(cartId, productId);
+        User user = userService.getAuthenticatedUser();
+        Cart cart = cartService.initializeNewCartForUser(user);
+        cartItemService.removeItemFromCart(cart.getId(), productId);
         return ResponseEntity.ok(new ApiResponse("Item removed successfully!", null));
     }
 
-    @PutMapping("/cart/{cartId}/update/item/{productId}")
-    public ResponseEntity<ApiResponse> updateCartItem(@PathVariable Long cartId,
+    @PutMapping("/cart/update/item/{productId}")
+    public ResponseEntity<ApiResponse> updateCartItem(
                                                       @PathVariable Long productId,
                                                       @RequestParam int quantity) {
-        cartItemService.updateItemQuantity(cartId, productId, quantity);
+        User user = userService.getAuthenticatedUser();
+        Cart cart = cartService.initializeNewCartForUser(user);
+        cartItemService.updateItemQuantity(cart.getId(), productId, quantity);
         return ResponseEntity.ok(new ApiResponse("Cart item updated successfully!", null));
     }
 }

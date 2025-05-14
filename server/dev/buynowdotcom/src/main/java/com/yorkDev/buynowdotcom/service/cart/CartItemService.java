@@ -6,6 +6,7 @@ import com.yorkDev.buynowdotcom.model.CartItem;
 import com.yorkDev.buynowdotcom.model.Product;
 import com.yorkDev.buynowdotcom.repository.CartItemRepository;
 import com.yorkDev.buynowdotcom.repository.CartRepository;
+import com.yorkDev.buynowdotcom.request.SyncCartRequest;
 import com.yorkDev.buynowdotcom.service.product.IProductService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -89,4 +91,24 @@ public class CartItemService implements ICartItemService {
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException("Item not found in Cart!"));
     }
+
+    @Override
+    @Transactional
+    public void syncCartItems(Long cartId, List<SyncCartRequest.SyncCartItem> incomingItems) {
+        for (SyncCartRequest.SyncCartItem incoming : incomingItems) {
+            Long productId = incoming.getProductId();
+            int incomingQty = incoming.getQuantity();
+
+            try {
+                // If item already exists, get it and update quantity
+                CartItem existing = getCartItem(cartId, productId);
+                int newQuantity = existing.getQuantity() + incomingQty;
+                updateItemQuantity(cartId, productId, newQuantity);
+            } catch (EntityNotFoundException e) {
+                // If item doesn't exist yet, add it
+                addItemToCart(cartId, productId, incomingQty);
+            }
+        }
+    }
+
 }

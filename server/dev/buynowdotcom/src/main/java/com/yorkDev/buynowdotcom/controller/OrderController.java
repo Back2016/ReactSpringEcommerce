@@ -4,6 +4,7 @@ import com.yorkDev.buynowdotcom.dtos.OrderDto;
 import com.yorkDev.buynowdotcom.model.Order;
 import com.yorkDev.buynowdotcom.response.ApiResponse;
 import com.yorkDev.buynowdotcom.service.order.IOrderService;
+import com.yorkDev.buynowdotcom.service.user.IUserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 @RequestMapping("${api.prefix}/orders")
 public class OrderController {
     private final IOrderService orderService;
+    private final IUserService userService;
 
     @PostMapping("/user/placeOrder")
     public ResponseEntity<ApiResponse> placeOrder(@RequestParam Long userId) {
