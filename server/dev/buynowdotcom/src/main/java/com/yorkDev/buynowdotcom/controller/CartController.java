@@ -27,6 +27,7 @@ public class CartController {
     public ResponseEntity<ApiResponse> getUserCart(@PathVariable Long userId) {
         // If user id in request and current user does not match, redirect to get current user cart
         User currentUser = userService.getAuthenticatedUser();
+        Cart cart = cartService.initializeNewCartForUser(currentUser);
         CartDto cartDto = cartService.getCartDtoByUserId(currentUser.getId());
         return ResponseEntity.ok(new ApiResponse("Found Cart: ", cartDto));
     }

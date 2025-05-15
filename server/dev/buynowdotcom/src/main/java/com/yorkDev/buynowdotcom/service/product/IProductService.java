@@ -26,4 +26,8 @@ public interface IProductService {
     List<ProductDto> getConvertedProducts(List<Product> products);
 
     ProductDto convertToDto(Product product);
+
+    List<String> getSuggestions(String query);
+
+    public Page<Product> getPaginatedProductsByName(String name, int page, int limit);
 }

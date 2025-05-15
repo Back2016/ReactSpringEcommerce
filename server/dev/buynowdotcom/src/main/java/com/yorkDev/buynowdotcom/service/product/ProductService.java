@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -164,6 +165,13 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public Page<Product> getPaginatedProductsByName(String name, int page, int limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        return productRepository.findPaginatedByName(name, pageable);
+    }
+
+
+    @Override
     public List<Product> getProductsByBrand(String brand) {
         return productRepository.findByBrand(brand);
     }
@@ -191,5 +199,14 @@ public class ProductService implements IProductService {
         List<ProductSpecDto> specDtos = specs.stream().map(spec -> modelMapper.map(spec, ProductSpecDto.class)).toList();
         productDto.setProductSpecs(specDtos);
         return productDto;
+    }
+
+    @Override
+    public List<String> getSuggestions(String query) {
+        Pageable limit = PageRequest.of(0, 5); // limit to top 5
+        return productRepository.findTop5ByNameContainingIgnoreCase(query, limit)
+                .stream()
+                .map(Product::getName)
+                .collect(Collectors.toList());
     }
 }

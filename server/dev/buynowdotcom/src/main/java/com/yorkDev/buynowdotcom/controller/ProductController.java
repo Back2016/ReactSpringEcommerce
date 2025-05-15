@@ -10,6 +10,7 @@ import com.yorkDev.buynowdotcom.service.product.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -36,7 +37,7 @@ public class ProductController {
         return ResponseEntity.ok().body(new ApiResponse("Found", productDto));
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<ApiResponse> addProduct(@RequestBody AddProductRequest product) {
         Product theProduct = productService.addProduct(product);
@@ -45,6 +46,7 @@ public class ProductController {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/product/{productId}/update")
     public ResponseEntity<ApiResponse> updateProduct(@RequestBody ProductUpdateRequest request, @PathVariable Long productId) {
         Product theProduct = productService.updateProduct(request, productId);
@@ -52,6 +54,7 @@ public class ProductController {
         return ResponseEntity.ok(new ApiResponse("Update product success!", productDto));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/product/{productId}/delete")
     public ResponseEntity<ApiResponse> deleteProduct(@PathVariable Long productId) {
         productService.deleteProductById(productId);
@@ -114,4 +117,28 @@ public class ProductController {
         return ResponseEntity.ok(new ApiResponse("success", responseBody));
     }
 
+    @GetMapping("/suggestions")
+    public ResponseEntity<List<String>> getProductSuggestions(@RequestParam String query) {
+        List<String> suggestions = productService.getSuggestions(query);
+        return ResponseEntity.ok(suggestions);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse> searchProductsByName(
+            @RequestParam String name,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int limit
+    ) {
+        Page<Product> pagedProducts = productService.getPaginatedProductsByName(name, page - 1, limit);
+        List<ProductDto> productDtos = productService.getConvertedProducts(pagedProducts.getContent());
+
+        PaginatedResponse<ProductDto> response = new PaginatedResponse<>(
+                productDtos,
+                pagedProducts.getNumber() + 1,
+                pagedProducts.getTotalPages(),
+                pagedProducts.getTotalElements()
+        );
+
+        return ResponseEntity.ok(new ApiResponse("Search results", response));
+    }
 }

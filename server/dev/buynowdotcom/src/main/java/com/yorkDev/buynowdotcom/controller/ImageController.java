@@ -10,6 +10,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +24,7 @@ import java.util.List;
 public class ImageController {
     private final IImageService imageService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/upload")
     public ResponseEntity<ApiResponse> uploadImages(
             @RequestParam("files") List<MultipartFile> files,
@@ -31,7 +33,6 @@ public class ImageController {
         return ResponseEntity.ok(new ApiResponse("Images uploaded successfully!", imageDtos));
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/image/download/{imageId}")
     public ResponseEntity<Resource> downloadImage(@PathVariable Long imageId) throws SQLException {
         Image image = imageService.getImageById(imageId);
@@ -43,12 +44,14 @@ public class ImageController {
                 .body(resource);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/image/{imageId}/update")
     public ResponseEntity<ApiResponse> updateImage(@PathVariable Long imageId, @RequestParam("file") MultipartFile file) {
         imageService.updateImage(file, imageId);
         return ResponseEntity.ok(new ApiResponse("Image updated successfully!", null));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/image/{imageId}/delete")
     public ResponseEntity<ApiResponse> deleteImage(@PathVariable Long imageId) {
         imageService.deleteImageById(imageId);

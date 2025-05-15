@@ -1,5 +1,6 @@
 package com.yorkDev.buynowdotcom.controller;
 
+import com.yorkDev.buynowdotcom.model.Role;
 import com.yorkDev.buynowdotcom.model.User;
 import com.yorkDev.buynowdotcom.repository.UserRepository;
 import com.yorkDev.buynowdotcom.request.LoginRequest;
@@ -48,16 +49,22 @@ public class AuthController {
 
         // Extract user
         User user = userRepository.findByEmail(request.getEmail());
-
         String accessToken = jwtUtils.generateAccessTokenForUser(authentication);
         String refreshToken = jwtUtils.generateRefreshToken(request.getEmail());
         cookieUtils.addRefreshTokenCookie(response, refreshToken, refreshTokenExpirationTime);
+
+        String role = user.getRoles().stream()
+                .map(Role::getName)
+                .findFirst()
+                .orElse("ROLE_USER");
+
         Map<String, String> resBody = new HashMap<>();
         resBody.put("accessToken", accessToken);
         resBody.put("userId", user.getId().toString());
         resBody.put("firstName", user.getFirstName());
         resBody.put("lastName", user.getLastName());
         resBody.put("email", request.getEmail());
+        resBody.put("role", role);
         return ResponseEntity.ok(resBody);
     }
 

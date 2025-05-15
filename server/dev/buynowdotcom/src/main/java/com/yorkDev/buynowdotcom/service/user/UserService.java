@@ -1,6 +1,7 @@
 package com.yorkDev.buynowdotcom.service.user;
 
 import com.yorkDev.buynowdotcom.dtos.UserDto;
+import com.yorkDev.buynowdotcom.model.Role;
 import com.yorkDev.buynowdotcom.model.User;
 import com.yorkDev.buynowdotcom.repository.UserRepository;
 import com.yorkDev.buynowdotcom.request.CreateUserRequest;
@@ -64,7 +65,13 @@ public class UserService implements IUserService{
 
     @Override
     public UserDto convertUserToDto(User user) {
-        return modelMapper.map(user, UserDto.class);
+        UserDto dto = modelMapper.map(user, UserDto.class);
+        String role = user.getRoles().stream()
+                .findFirst()
+                .map(Role::getName)
+                .orElse(null);
+        dto.setRole(role);
+        return dto;
     }
 
     @Override
