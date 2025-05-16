@@ -2,8 +2,10 @@ package com.yorkDev.buynowdotcom.controller;
 
 import com.yorkDev.buynowdotcom.dtos.ImageDto;
 import com.yorkDev.buynowdotcom.model.Image;
+import com.yorkDev.buynowdotcom.model.Product;
 import com.yorkDev.buynowdotcom.response.ApiResponse;
 import com.yorkDev.buynowdotcom.service.image.IImageService;
+import com.yorkDev.buynowdotcom.service.product.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -23,6 +25,7 @@ import java.util.List;
 @RequestMapping("${api.prefix}/images")
 public class ImageController {
     private final IImageService imageService;
+    private final IProductService productService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/upload")
@@ -35,6 +38,18 @@ public class ImageController {
 
     @GetMapping("/image/download/{imageId}")
     public ResponseEntity<Resource> downloadImage(@PathVariable Long imageId) throws SQLException {
+        Image image = imageService.getImageById(imageId);
+        ByteArrayResource resource = new ByteArrayResource(image.getImage().getBytes(1, (int) image.getImage().length()));
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.parseMediaType(image.getFileType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + image.getFileName() + "\"")
+                .body(resource);
+    }
+
+    @GetMapping("/image/download/product/{productId}")
+    public ResponseEntity<Resource> downloadProductImage(@PathVariable Long productId) throws SQLException {
+        Long imageId = productService.getProductById(productId).getImages().stream().findFirst().get().getId();
         Image image = imageService.getImageById(imageId);
         ByteArrayResource resource = new ByteArrayResource(image.getImage().getBytes(1, (int) image.getImage().length()));
         return ResponseEntity

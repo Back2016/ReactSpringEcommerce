@@ -38,4 +38,12 @@ public class Order {
     @JsonManagedReference
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<OrderItem> orderItems = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "shipping_address_id")
+    private Address shippingAddress;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "billing_address_id")
+    private Address billingAddress;
 }

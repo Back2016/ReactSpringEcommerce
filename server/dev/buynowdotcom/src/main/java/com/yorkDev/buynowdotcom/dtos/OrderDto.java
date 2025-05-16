@@ -14,5 +14,7 @@ public class OrderDto {
     private BigDecimal totalAmount;
     private String status;
     private List<OrderItemDto> items;
-}
 
+    private AddressDto shippingAddress;
+    private AddressDto billingAddress;
+}

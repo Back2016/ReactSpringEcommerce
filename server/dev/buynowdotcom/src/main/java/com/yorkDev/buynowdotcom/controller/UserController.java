@@ -8,6 +8,7 @@ import com.yorkDev.buynowdotcom.response.ApiResponse;
 import com.yorkDev.buynowdotcom.service.user.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final IUserService userService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/user/{userId}/user")
     public ResponseEntity<ApiResponse> getUserById(@PathVariable Long userId) {
         User user = userService.getUserById(userId);

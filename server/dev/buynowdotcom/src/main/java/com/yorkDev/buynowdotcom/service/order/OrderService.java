@@ -1,15 +1,22 @@
 package com.yorkDev.buynowdotcom.service.order;
 
+import com.yorkDev.buynowdotcom.dtos.AddressDto;
 import com.yorkDev.buynowdotcom.dtos.OrderDto;
 import com.yorkDev.buynowdotcom.enums.OrderStatus;
 import com.yorkDev.buynowdotcom.exceptions.InsufficientInventoryException;
 import com.yorkDev.buynowdotcom.model.*;
+import com.yorkDev.buynowdotcom.repository.AddressRepository;
 import com.yorkDev.buynowdotcom.repository.OrderRepository;
 import com.yorkDev.buynowdotcom.repository.ProductRepository;
+import com.yorkDev.buynowdotcom.request.PlaceOrderRequest;
 import com.yorkDev.buynowdotcom.service.cart.ICartService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +32,20 @@ public class OrderService implements IOrderService {
     private final ProductRepository productRepository;
     private final ICartService cartService;
     private final ModelMapper modelMapper;
+    private final AddressRepository addressRepository;
 
     @Override
     @Transactional
-    public OrderDto placeOrder(Long userId) {
+    public OrderDto placeOrder(Long userId, PlaceOrderRequest request) {
         Cart cart = cartService.getCartByUserId(userId);
+        Address shipping = addressRepository.findById(request.getShippingAddressId())
+                .orElseThrow(() -> new EntityNotFoundException("Shipping address not found"));
+
+        Address billing = addressRepository.findById(request.getBillingAddressId())
+                .orElseThrow(() -> new EntityNotFoundException("Billing address not found"));
+
         // Create an order under current user
-        Order order = createOrder(cart);
+        Order order = createOrder(cart, shipping, billing);
         // Create a list of orderItems from cart
         List<OrderItem> orderItemList = createOrderItems(order, cart);
         // Set the order items using the list
@@ -47,8 +61,10 @@ public class OrderService implements IOrderService {
     }
 
     // Helper: Create an order under given user with a pending status and now date
-    private Order createOrder(Cart cart) {
+    private Order createOrder(Cart cart, Address shipping, Address billing) {
         Order order = new Order();
+        order.setShippingAddress(shipping);
+        order.setBillingAddress(billing);
         order.setUser(cart.getUser());
         order.setOrderStatus(OrderStatus.PENDING);
         order.setOrderDate(LocalDate.now());
@@ -92,11 +108,54 @@ public class OrderService implements IOrderService {
     @Override
     public List<OrderDto> getUserOrders(Long userId) {
         List<Order> orders = orderRepository.findByUserId(userId);
-        return orders.stream().map(this :: convertToDto).toList();
+        return orders.stream().map(this::convertToDto).toList();
     }
 
     @Override
     public OrderDto convertToDto(Order order) {
-        return modelMapper.map(order, OrderDto.class);
+        OrderDto dto = modelMapper.map(order, OrderDto.class);
+
+        // Explicitly map nested addresses
+        dto.setShippingAddress(modelMapper.map(order.getShippingAddress(), AddressDto.class));
+        dto.setBillingAddress(modelMapper.map(order.getBillingAddress(), AddressDto.class));
+
+        return dto;
     }
+
+    @Override
+    public Page<OrderDto> getOrdersForAdmin(String status, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("orderDate").descending());
+        Page<Order> orders;
+
+        if ("ALL".equalsIgnoreCase(status)) {
+            orders = orderRepository.findAll(pageable);
+        } else {
+            OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
+            orders = orderRepository.findByOrderStatus(orderStatus, pageable);
+        }
+
+        return orders.map(this::convertToDto);
+    }
+
+    @Override
+    @Transactional
+    public OrderDto updateOrderStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        OrderStatus newStatus;
+        try {
+            newStatus = OrderStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid order status: " + status);
+        }
+
+        order.setOrderStatus(newStatus);
+        Order updated = orderRepository.save(order);
+
+        return convertToDto(updated);
+    }
+
+
+
 }
