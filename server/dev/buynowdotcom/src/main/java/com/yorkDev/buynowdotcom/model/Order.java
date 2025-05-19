@@ -35,6 +35,9 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private String guestEmail;
+
+
     @JsonManagedReference
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<OrderItem> orderItems = new HashSet<>();

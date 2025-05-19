@@ -1,6 +1,7 @@
 package com.yorkDev.buynowdotcom.service.order;
 
 import com.yorkDev.buynowdotcom.dtos.AddressDto;
+import com.yorkDev.buynowdotcom.dtos.CartItemDto;
 import com.yorkDev.buynowdotcom.dtos.OrderDto;
 import com.yorkDev.buynowdotcom.enums.OrderStatus;
 import com.yorkDev.buynowdotcom.exceptions.InsufficientInventoryException;
@@ -8,6 +9,7 @@ import com.yorkDev.buynowdotcom.model.*;
 import com.yorkDev.buynowdotcom.repository.AddressRepository;
 import com.yorkDev.buynowdotcom.repository.OrderRepository;
 import com.yorkDev.buynowdotcom.repository.ProductRepository;
+import com.yorkDev.buynowdotcom.request.PlaceGuestOrderRequest;
 import com.yorkDev.buynowdotcom.request.PlaceOrderRequest;
 import com.yorkDev.buynowdotcom.service.cart.ICartService;
 import jakarta.persistence.EntityNotFoundException;
@@ -106,6 +108,74 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    @Transactional
+    public OrderDto placeGuestOrder(PlaceGuestOrderRequest request) {
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Cart is empty");
+        }
+
+        Address shipping = saveGuestAddress(request.getShippingAddress());
+        Address billing = saveGuestAddress(request.getBillingAddress());
+
+        Order order = createGuestOrder(request.getGuestEmail(), shipping, billing);
+
+        List<OrderItem> orderItems = createGuestOrderItems(order, request.getItems());
+
+        order.setOrderItems(new HashSet<>(orderItems));
+        order.setTotalAmount(calculateTotalAmount(orderItems));
+
+        Order saved = orderRepository.save(order);
+        return convertToDto(saved);
+    }
+
+    private Address saveGuestAddress(AddressDto addressDto) {
+        Address address = modelMapper.map(addressDto, Address.class);
+        return addressRepository.save(address);
+    }
+
+    private Order createGuestOrder(String guestEmail, Address shipping, Address billing) {
+        Order order = new Order();
+        order.setGuestEmail(guestEmail);
+        order.setShippingAddress(shipping);
+        order.setBillingAddress(billing);
+        order.setOrderStatus(OrderStatus.PENDING);
+        order.setOrderDate(LocalDate.now());
+        return order;
+    }
+
+    private List<OrderItem> createGuestOrderItems(Order order, List<CartItemDto> items) {
+        return items.stream().map(item -> {
+            Long productId = item.getProduct().getId();
+            int quantity = item.getQuantity();
+
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found: " + productId));
+
+            if (product.getInventory() < quantity) {
+                throw new InsufficientInventoryException("Insufficient stock for product: " + product.getName());
+            }
+
+            product.setInventory(product.getInventory() - quantity);
+            productRepository.save(product);
+
+            return new OrderItem(order, product, product.getPrice(), quantity);
+        }).toList();
+    }
+
+    @Override
+    public Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + orderId));
+    }
+
+
+    @Override
+    public List<Order> getGuestOrdersByEmail(String email) {
+        return orderRepository.findByGuestEmail(email);
+    }
+
+
+    @Override
     public List<OrderDto> getUserOrders(Long userId) {
         List<Order> orders = orderRepository.findByUserId(userId);
         return orders.stream().map(this::convertToDto).toList();
@@ -155,7 +225,6 @@ public class OrderService implements IOrderService {
 
         return convertToDto(updated);
     }
-
 
 
 }

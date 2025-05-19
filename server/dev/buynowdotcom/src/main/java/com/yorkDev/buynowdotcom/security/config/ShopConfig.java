@@ -68,7 +68,8 @@ public class ShopConfig {
         List<String> securedUrls = List.of(
                 API + "/carts/**",
                 API + "/cartItems/**",
-                API + "/orders/**"
+                API + "/orders/user/**",
+                API + "/orders/admin/**"
         );
 
         http.cors(Customizer.withDefaults())

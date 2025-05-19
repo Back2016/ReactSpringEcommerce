@@ -17,4 +17,5 @@ public class OrderDto {
 
     private AddressDto shippingAddress;
     private AddressDto billingAddress;
+    private String guestEmail;
 }
