@@ -1,8 +1,10 @@
 package com.yorkDev.buynowdotcom.controller;
 
+import com.stripe.exception.StripeException;
 import com.yorkDev.buynowdotcom.dtos.OrderDto;
 import com.yorkDev.buynowdotcom.model.Order;
 import com.yorkDev.buynowdotcom.model.User;
+import com.yorkDev.buynowdotcom.request.PaymentRequest;
 import com.yorkDev.buynowdotcom.request.PlaceGuestOrderRequest;
 import com.yorkDev.buynowdotcom.request.PlaceOrderRequest;
 import com.yorkDev.buynowdotcom.response.ApiResponse;
@@ -20,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -108,5 +111,11 @@ public class OrderController {
     ) {
         OrderDto updated = orderService.updateOrderStatus(orderId, status);
         return ResponseEntity.ok(new ApiResponse("Order status updated", updated));
+    }
+
+    @PostMapping("/paymentIntent")
+    public ResponseEntity<?> createPaymentIntent(@RequestBody PaymentRequest request) throws StripeException {
+        String clientSecret = orderService.createPaymentIntent(request);
+        return ResponseEntity.ok(Map.of("clientSecret", clientSecret));
     }
 }

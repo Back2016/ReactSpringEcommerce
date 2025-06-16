@@ -1,5 +1,8 @@
 package com.yorkDev.buynowdotcom.service.order;
 
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
+import com.stripe.param.PaymentIntentCreateParams;
 import com.yorkDev.buynowdotcom.dtos.AddressDto;
 import com.yorkDev.buynowdotcom.dtos.CartItemDto;
 import com.yorkDev.buynowdotcom.dtos.OrderDto;
@@ -9,6 +12,7 @@ import com.yorkDev.buynowdotcom.model.*;
 import com.yorkDev.buynowdotcom.repository.AddressRepository;
 import com.yorkDev.buynowdotcom.repository.OrderRepository;
 import com.yorkDev.buynowdotcom.repository.ProductRepository;
+import com.yorkDev.buynowdotcom.request.PaymentRequest;
 import com.yorkDev.buynowdotcom.request.PlaceGuestOrderRequest;
 import com.yorkDev.buynowdotcom.request.PlaceOrderRequest;
 import com.yorkDev.buynowdotcom.service.cart.ICartService;
@@ -226,5 +230,21 @@ public class OrderService implements IOrderService {
         return convertToDto(updated);
     }
 
+    @Override
+    public String createPaymentIntent(PaymentRequest request) throws StripeException {
+        Order orderToBePaid = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));;
+        long amountInSmallestUnit = orderToBePaid.getTotalAmount().multiply(BigDecimal.valueOf(100)).longValue();
 
+        PaymentIntent intent = PaymentIntent.create(
+                PaymentIntentCreateParams.builder()
+                        .setAmount(amountInSmallestUnit)
+                        .setCurrency("usd")
+                        .addPaymentMethodType("card")
+                        .putMetadata("orderId", String.valueOf(orderToBePaid.getOrderId()))
+                        .build()
+        );
+
+        return intent.getClientSecret();
+    }
 }
