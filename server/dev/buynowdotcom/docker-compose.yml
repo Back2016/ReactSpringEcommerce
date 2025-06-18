@@ -1,0 +1,25 @@
+services:
+  db:
+    image: mysql:8
+    container_name: mysql
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: buynowdb
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./demobuy.sql:/docker-entrypoint-initdb.d/demobuy.sql
+
+  be:
+    image: blkraven/demobuy
+    ports:
+      - "9090:9090"
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+
+  fe:
+volumes:
+  mysql_data:

@@ -15,7 +15,11 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("http://localhost:3000")); // frontend origin
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://3.144.13.127:3000",
+                "https://yorkdev.xyz",
+                "https://www.yorkdev.xyz")); // frontend origin
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // required for cookies or Authorization header
